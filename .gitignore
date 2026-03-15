@@ -51,3 +51,6 @@ yarn-error.log*
 dist/
 build/
 *.tsbuildinfo
+
+# Local Uploads
+uploads/

@@ -1411,7 +1411,7 @@ CRITICAL RULES (Output Format):
    - "target": The ID of the child/destination node.
    - "label": Write an explicit, concise explanation of EXACTLY how these two nodes are related on the arrow itself. It MUST explain the CAUSE, EFFECT, or REASON clearly using action verbs (e.g., "causes / يسبب", "affects / يؤثر على", "leads to / يؤدي إلى", "increases / يزيد من", "because / بسبب").
    - EXAMPLE CHAIN: "Climate Change" --[causes]--> "Global Warming" --[increases]--> "Temperature" --[affects]--> "Ice Melting". Follow this precise logical flow format.
-   - STRICT TREE STRUCTURE: DO NOT create criss-crossing lines, multiple parents for one node, or complex webs. Keep it as a clean top-to-bottom TREE to ensure arrows NEVER overlap visually. Every node (except the root) should have exactly ONE parent.
+   - STRICT VERTICAL TREE STRUCTURE: DO NOT create criss-crossing lines, multiple parents for one node, or complex webs. Keep it as a clean Top-Down (TD) vertical TREE to ensure arrows NEVER overlap visually. Every node (except the root) should have exactly ONE parent and be displayed below its parent.
 4. NO FORMULAS OR NUMBERS in nodes. Extract ONLY pure qualitative theoretical concepts.
 5. "interactiveGuide": An array of objects that MUST cover EVERY SINGLE NODE generated in the "nodes" array in a logical step-by-step teaching order. Each MUST have:
    - "node": The name of the concept (Must EXACTLY MATCH the label in the nodes array).
