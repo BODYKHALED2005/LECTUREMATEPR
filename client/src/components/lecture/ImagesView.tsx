@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Image as ImageIcon, Sparkles } from "lucide-react";
+import { RefreshCw, Image as ImageIcon, Sparkles, Maximize2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -19,6 +19,7 @@ export function ImagesView({ lectureId, images, onAnalysisRequested }: ImagesVie
         title: language === "ar" ? "الصور المستخرجة" : "Extracted Images",
         subtitle: language === "ar" ? "تم استخراج هذه الصور من المستند" : "These images were extracted from the document",
         analyze: language === "ar" ? "تحليل بالذكاء الاصطناعي" : "Analyze with AI",
+        analyzing: language === "ar" ? "جاري التحليل..." : "Analyzing...",
         noImages: language === "ar" ? "لم يتم العثور على صور" : "No images found",
     };
 
@@ -63,14 +64,28 @@ export function ImagesView({ lectureId, images, onAnalysisRequested }: ImagesVie
                                     className="w-full object-contain max-h-[300px] hover:scale-105 transition-transform duration-300"
                                 />
                             </div>
-                            <CardContent className="p-4 flex flex-col">
+                            <CardContent className="p-4 flex flex-col gap-3">
                                 <div>
                                     {img.description ? (
-                                        <p className="text-sm text-foreground/80 leading-relaxed mb-4 whitespace-pre-wrap">
-                                            {img.description}
-                                        </p>
+                                        <div className="space-y-3">
+                                            <p className="text-sm text-foreground/80 leading-relaxed line-clamp-3 whitespace-pre-wrap italic border-l-2 border-primary/20 pl-3 py-1">
+                                                {img.description === "Analyzing..." ? t.analyzing : img.description}
+                                            </p>
+                                            <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                className="w-full gap-2 text-xs h-8"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    window.open(`/lecture/${lectureId}/image/${idx}`, '_blank');
+                                                }}
+                                            >
+                                                <Maximize2 className="w-3.5 h-3.5" />
+                                                {language === "ar" ? "تفاصيل التحليل" : "View Analysis Details"}
+                                            </Button>
+                                        </div>
                                     ) : (
-                                        <p className="text-sm text-muted-foreground italic mb-4">
+                                        <p className="text-sm text-muted-foreground italic mb-2">
                                             {language === "ar" ? "لم يتم تحليل هذه الصورة بعد الإستخراج." : "This image has not been analyzed yet."}
                                         </p>
                                     )}
@@ -79,10 +94,13 @@ export function ImagesView({ lectureId, images, onAnalysisRequested }: ImagesVie
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="w-full gap-2 mt-auto"
-                                        onClick={() => onAnalysisRequested?.(img.url)}
+                                        className="w-full gap-2 mt-auto group transition-all hover:border-primary/50"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            window.open(`/lecture/${lectureId}/image/${idx}`, '_blank');
+                                        }}
                                     >
-                                        <Sparkles className="w-4 h-4 text-primary" />
+                                        <Sparkles className="w-4 h-4 text-primary group-hover:animate-pulse" />
                                         {t.analyze}
                                     </Button>
                                 )}

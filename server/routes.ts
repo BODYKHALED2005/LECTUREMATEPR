@@ -1494,12 +1494,12 @@ ${contentSource}
    */
   app.post("/api/ai/analyze-image", async (req: Request, res: Response) => {
     try {
-      const { imageUrl, transcript } = req.body;
+      const { imageUrl, transcript, language: forcedLanguage } = req.body;
       if (!imageUrl) {
         return res.status(400).json({ error: "Image URL is required" });
       }
 
-      console.log(`[API] Analyzing image: ${imageUrl}`);
+      console.log(`[API] Analyzing image: ${imageUrl} (Language: ${forcedLanguage || 'auto'})`);
       const geminiApiKey = process.env.GEMINI_API_KEY;
 
       if (!geminiApiKey) {
@@ -1532,7 +1532,7 @@ ${contentSource}
       const genAI = new GoogleGenerativeAI(geminiApiKey);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const hasArabic = /[\u0600-\u06FF]/.test(transcript || "");
+      const hasArabic = forcedLanguage === "ar" || (/[\u0600-\u06FF]/.test(transcript || "") && forcedLanguage !== "en");
       const outputLanguage = hasArabic ? "Arabic" : "English";
 
       const prompt = `Act as an expert academic assistant. Analyze this image in detail.

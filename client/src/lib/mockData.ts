@@ -78,7 +78,7 @@ export interface Lecture {
   geminiFileUri?: string; // Gemini Vision API file URI
   geminiFileMimeType?: string; // Gemini Vision API file mime type
   conceptMap?: any; // AI generated concept map configuration
-  extractedImages?: { url: string; description: string; analyzed?: boolean }[]; // Array of extracted images
+  extractedImages?: { url: string; description: string; descriptionAr?: string; analyzed?: boolean }[]; // Array of extracted images
 }
 
 export const MOCK_LECTURES: Lecture[] = [

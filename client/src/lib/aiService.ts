@@ -524,13 +524,13 @@ export async function evaluateEssayAnswer(
 }
 
 // Analyze extracted image with Gemini Vision
-export async function analyzeImageWithAI(imageUrl: string, transcript?: string): Promise<string> {
+export async function analyzeImageWithAI(imageUrl: string, transcript?: string, language?: string): Promise<string> {
   try {
     console.log(`[aiService] Requesting image analysis...`);
     const response = await fetch("/api/ai/analyze-image", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ imageUrl, transcript }),
+      body: JSON.stringify({ imageUrl, transcript, language }),
     });
 
     if (!response.ok) {
