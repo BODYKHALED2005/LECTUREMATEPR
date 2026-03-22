@@ -134,7 +134,7 @@ export function AgentChatView({ transcript, title, mode = "api", minimal = false
     }
 
     return (
-        <div className={minimal ? "flex flex-col fixed inset-0 z-[100] bg-background/95 backdrop-blur-md" : "flex flex-col h-[calc(100vh-350px)] min-h-[400px] border rounded-2xl overflow-hidden bg-background shadow-lg relative"}>
+        <div className={minimal ? "flex flex-col fixed inset-0 z-[100] bg-background/95 backdrop-blur-md" : "flex flex-col h-[85vh] min-h-[750px] border rounded-2xl overflow-hidden bg-background shadow-lg relative"}>
             {!minimal && <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-secondary/5 pointer-events-none" />}
 
             {/* Header */}
@@ -148,7 +148,7 @@ export function AgentChatView({ transcript, title, mode = "api", minimal = false
                     </div>
                     <div>
                         <h2 className="font-bold text-foreground bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
-                            {language === "ar" ? "الوكيل الذكي" : "Smart Agent"}
+                            {language === "ar" ? "الوكيل الذكي (مدعوم من Gemini)" : "Smart Agent (Powered by Gemini)"}
                         </h2>
                         <p className="text-xs text-muted-foreground flex items-center gap-1">
                             <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />

@@ -3285,24 +3285,28 @@ ${transcript.substring(0, 30000)}`;
       const isArabic = /[\u0600-\u06FF]/.test(message) || /[\u0600-\u06FF]/.test(transcript.substring(0, 100));
 
       const systemPrompt = isArabic
-        ? `أنت مساعد ذكي مدمج في أداة دراسية (LectureMate). دورك هو الإجابة على أسئلة الطالب بناءً على نص المحاضرة المرفق.
+        ? `أنت مساعد ذكي مدمج في أداة دراسية (LectureMate). أجب على سؤال الطالب بناءً على المحاضرة، وقدم أيضًا إجابة وتفاصيل إضافية من منظورك الخاص ومعلوماتك العامة لتوسيع فهمه ومساعدته بشكل أكبر.
         
 نص المحاضرة:
 ${transcript.substring(0, 30000)}
 
 قواعد هامة:
-1. أجب دائمًا باللغة العربية بأسلوب ودود ومفيد.
-2. اعتمد في إجابتك على نص المحاضرة. إذا كان السؤال خارج سياق المحاضرة، وضح ذلك برفق قبل الإجابة.
-3. كن مختصراً ومباشراً.`
-        : `You are a Smart Agent integrated into a study tool (LectureMate). Your role is to answer the student's questions based on the provided lecture transcript.
+1. أجب دائمًا باللغة العربية بأسلوب ودود وعلمي.
+2. قسّم إجابتك دائمًا إلى قسمين واضحين:
+   - "من المحاضرة:": اشرح هنا ما ورد في نص المحاضرة تحديداً بخصوص السؤال.
+   - "من منظوري (Gemini):": قدم هنا معلوماتك الإضافية، والرد من منظورك الشخصي، وشرحًا من خارج المحاضرة يفيد الطالب.
+3. كن منظماً واستخدم التنسيق الجيد.`
+        : `You are a Smart Agent integrated into a study tool (LectureMate). Answer the student's question based on the lecture, and also provide additional explanations from your own perspective and general knowledge to expand their understanding.
         
 Lecture Transcript:
 ${transcript.substring(0, 30000)}
 
 Important Rules:
 1. Answer in English in a helpful, friendly tone.
-2. Base your answers on the transcript context. If the question is outside the scope of the lecture, politely state that before answering.
-3. Be concise and to the point.`;
+2. Always divide your answer into two clear sections:
+   - "**From the Lecture:**": Explain specifically what is mentioned in the transcript regarding the question.
+   - "**From My Perspective (Gemini):**": Provide your additional knowledge, perspective, and outside context here.
+3. Be organized and use Markdown formatting naturally.`;
 
       const promptInfo = history.length > 0
         ? `Here is the conversation history:\n${history.map(m => `${m.role === 'ai' ? 'Agent' : 'User'}: ${m.content}`).join('\n')}\n\nUser: ${message}`

@@ -16,7 +16,8 @@ import { FlashcardsView } from "@/components/lecture/FlashcardsView";
 import { FormulasView } from "@/components/lecture/FormulasView";
 import { ConceptMapView } from "@/components/lecture/ConceptMapView";
 import { ImagesView } from "@/components/lecture/ImagesView";
-import { Brain, MessageSquare, BrainCircuit, Image as ImageIcon } from "lucide-react";
+import { Brain, MessageSquare, BrainCircuit, Image as ImageIcon, Bot } from "lucide-react";
+import { AgentChatView } from "@/components/lecture/AgentChatView";
 import { useLecture, useLectures } from "@/hooks/useLectures";
 import { generateSummary, generateQuiz, generateSlides, generateFlashcards, generateFormulas as extractMathFormulas, generateConceptMap, analyzeImageWithAI } from "@/lib/aiService";
 import {
@@ -194,6 +195,7 @@ export default function LectureView() {
     cards: language === "ar" ? "البطاقات" : "Cards",
     formulas: language === "ar" ? "المعادلات" : "Formulas",
     images: language === "ar" ? "الصور" : "Images",
+    chat: language === "ar" ? "المحادثة" : "Chat Agent",
     status: {
       completed: language === "ar" ? "مكتمل" : "completed",
       processing: language === "ar" ? "جاري المعالجة" : "processing",
@@ -1148,6 +1150,13 @@ export default function LectureView() {
                         <span className="hidden sm:inline">{t.images}</span>
                       </TabsTrigger>
                     ) : null}
+                    <TabsTrigger
+                      value="chat"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                    >
+                      <Bot className="w-4 h-4 ml-2 animate-pulse" />
+                      <span className="hidden sm:inline">{t.chat}</span>
+                    </TabsTrigger>
                   </>
                 ) : (
                   // English order: Transcript > Summary > Quiz > Slides > Formulas > Flashcards (from left to right)
@@ -1214,6 +1223,13 @@ export default function LectureView() {
                         <span className="hidden sm:inline">{t.images}</span>
                       </TabsTrigger>
                     ) : null}
+                    <TabsTrigger
+                      value="chat"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                    >
+                      <Bot className="w-4 h-4 mr-2 animate-pulse" />
+                      <span className="hidden sm:inline">{t.chat}</span>
+                    </TabsTrigger>
                   </>
                 )}
               </TabsList>
@@ -1312,6 +1328,14 @@ export default function LectureView() {
                     </p>
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="chat" className="mt-0 animate-in fade-in-50 duration-300">
+                <AgentChatView
+                  transcript={lecture.transcript || ""}
+                  title={lecture.title}
+                  mode={selectedModel}
+                />
               </TabsContent>
             </div>
           </Tabs>
