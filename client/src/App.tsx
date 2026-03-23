@@ -15,6 +15,7 @@ import SignIn from "@/pages/auth/sign-in";
 import SignUp from "@/pages/auth/sign-up";
 import Profile from "@/pages/profile";
 import ImageAnalysisPage from "@/pages/image-analysis";
+import FullscreenView from "@/pages/fullscreen-view";
 
 function Router() {
   return (
@@ -47,6 +48,11 @@ function Router() {
       <Route path="/lecture/:id/image/:index">
         <ProtectedRoute>
           <ImageAnalysisPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/lecture/:id/fullscreen/:tab">
+        <ProtectedRoute>
+          <FullscreenView />
         </ProtectedRoute>
       </Route>
       <Route component={NotFound} />

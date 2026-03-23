@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { FileText, List, HelpCircle, Presentation, Share2, Download, ChevronLeft, Trash2, X, Sparkles, Clock, Calendar, Sigma } from "lucide-react";
+import { FileText, List, HelpCircle, Presentation, Share2, Download, ChevronLeft, Trash2, X, Sparkles, Clock, Calendar, Sigma, Maximize2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link, useLocation } from "wouter";
 import { TranscriptView } from "@/components/lecture/TranscriptView";
@@ -31,6 +31,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
@@ -180,6 +186,8 @@ export default function LectureView() {
     rerunAI: language === "ar" ? "إعادة تشغيل الذكاء الاصطناعي" : "Re-run AI",
     share: language === "ar" ? "مشاركة" : "Share",
     exportAll: language === "ar" ? "تصدير الكل" : "Export All",
+    openInNewWindow: language === "ar" ? "فتح في نافذة جديدة" : "Open in New Window",
+    openInPopup: language === "ar" ? "فتح في نافذة منبثقة" : "Open in Popup",
     delete: language === "ar" ? "حذف" : "Delete",
     deleting: language === "ar" ? "جاري الحذف..." : "Deleting...",
     areYouSure: language === "ar" ? "هل أنت متأكد؟" : "Are you sure?",
@@ -816,6 +824,21 @@ export default function LectureView() {
     }
   };
 
+  const [activeTab, setActiveTab] = useState("summary");
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const [popupTab, setPopupTab] = useState<string | null>(null);
+
+  const handleOpenInPopup = (tabValue: string) => {
+    setPopupTab(tabValue);
+    setIsPopupOpen(true);
+  };
+
+  const handleOpenInNewWindow = (tabValue: string) => {
+    if (!lecture) return;
+    const url = `/lecture/${lecture.id}/fullscreen/${tabValue}`;
+    window.open(url, "_blank", "width=1000,height=800");
+  };
+
   if (isLoading) {
     return (
       <AppLayout>
@@ -1082,80 +1105,143 @@ export default function LectureView() {
           transition={{ duration: 0.3, delay: 0.1 }}
         >
 
-          <Tabs defaultValue="summary" className="w-full">
-            <div className="border-b border-border/40 mb-6">
+          <Tabs defaultValue="summary" value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-border/40 mb-6 gap-4">
               <TabsList className={`grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 h-auto bg-transparent p-0 gap-1 ${language === "ar" ? "[direction:rtl]" : ""}`}>
                 {language === "ar" ? (
                   // Arabic order: النص الكامل > الملخص > الاختبار > الشرائح > المعادلات > البطاقات (from right to left)
                   <>
                     <TabsTrigger
                       value="transcript"
-                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                     >
                       <FileText className="w-4 h-4 ml-2" />
                       <span className="hidden sm:inline">{t.transcript}</span>
+                      <div 
+                        onClick={(e) => { e.stopPropagation(); handleOpenInPopup("transcript"); }}
+                        className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                        title={t.openInPopup || "Open in Popup"}
+                      >
+                        <Maximize2 className="w-3 h-3" />
+                      </div>
                     </TabsTrigger>
                     <TabsTrigger
                       value="summary"
-                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                     >
                       <List className="w-4 h-4 ml-2" />
                       <span className="hidden sm:inline">{t.summary}</span>
+                      <div 
+                        onClick={(e) => { e.stopPropagation(); handleOpenInPopup("summary"); }}
+                        className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                        title={t.openInPopup || "Open in Popup"}
+                      >
+                        <Maximize2 className="w-3 h-3" />
+                      </div>
                     </TabsTrigger>
                     <TabsTrigger
                       value="conceptMap"
-                      className="flex-1 sm:flex-none justify-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:shadow-sm rounded-lg py-2.5 transition-all w-16 sm:w-auto"
+                      className="flex-1 sm:flex-none justify-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:shadow-sm rounded-lg py-2.5 transition-all w-16 sm:w-auto group relative"
                     >
                       <BrainCircuit className="w-5 h-5 sm:w-4 sm:h-4" />
                       <span className="hidden sm:inline">{t.conceptMap || "Concept Map"}</span>
+                      <div 
+                        onClick={(e) => { e.stopPropagation(); handleOpenInPopup("conceptMap"); }}
+                        className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                        title={t.openInPopup || "Open in Popup"}
+                      >
+                        <Maximize2 className="w-3 h-3" />
+                      </div>
                     </TabsTrigger>
                     <TabsTrigger
                       value="quiz"
-                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                     >
                       <HelpCircle className="w-4 h-4 ml-2" />
                       <span className="hidden sm:inline">{t.quiz}</span>
+                      <div 
+                        onClick={(e) => { e.stopPropagation(); handleOpenInPopup("quiz"); }}
+                        className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                        title={t.openInPopup || "Open in Popup"}
+                      >
+                        <Maximize2 className="w-3 h-3" />
+                      </div>
                     </TabsTrigger>
                     {!isPresentation && (
                       <TabsTrigger
                         value="slides"
-                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                       >
                         <Presentation className="w-4 h-4 ml-2" />
                         <span className="hidden sm:inline">{t.slides}</span>
+                        <div 
+                          onClick={(e) => { e.stopPropagation(); handleOpenInPopup("slides"); }}
+                          className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                          title={t.openInPopup || "Open in Popup"}
+                        >
+                          <Maximize2 className="w-3 h-3" />
+                        </div>
                       </TabsTrigger>
                     )}
                     {hasFormulas && (
                       <TabsTrigger
                         value="formulas"
-                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                       >
                         <Sigma className="w-4 h-4 ml-2" />
                         <span className="hidden sm:inline">{t.formulas}</span>
+                        <div 
+                          onClick={(e) => { e.stopPropagation(); handleOpenInPopup("formulas"); }}
+                          className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                          title={t.openInPopup || "Open in Popup"}
+                        >
+                          <Maximize2 className="w-3 h-3" />
+                        </div>
                       </TabsTrigger>
                     )}
                     <TabsTrigger
                       value="flashcards"
-                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                     >
                       <Brain className="w-4 h-4 ml-2" />
                       <span className="hidden sm:inline">{t.cards}</span>
+                      <div 
+                        onClick={(e) => { e.stopPropagation(); handleOpenInPopup("flashcards"); }}
+                        className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                        title={t.openInPopup || "Open in Popup"}
+                      >
+                        <Maximize2 className="w-3 h-3" />
+                      </div>
                     </TabsTrigger>
                     {(lecture.extractedImages && lecture.extractedImages.length > 0) || isPresentation || lecture?.title?.match(/\.(pdf)$/i) ? (
                       <TabsTrigger
                         value="images"
-                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                       >
                         <ImageIcon className="w-4 h-4 ml-2" />
                         <span className="hidden sm:inline">{t.images}</span>
+                        <div 
+                          onClick={(e) => { e.stopPropagation(); handleOpenInPopup("images"); }}
+                          className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                          title={t.openInPopup || "Open in Popup"}
+                        >
+                          <Maximize2 className="w-3 h-3" />
+                        </div>
                       </TabsTrigger>
                     ) : null}
                     <TabsTrigger
                       value="chat"
-                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                     >
                       <Bot className="w-4 h-4 ml-2 animate-pulse" />
                       <span className="hidden sm:inline">{t.chat}</span>
+                      <div 
+                        onClick={(e) => { e.stopPropagation(); handleOpenInPopup("chat"); }}
+                        className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                        title={t.openInPopup || "Open in Popup"}
+                      >
+                        <Maximize2 className="w-3 h-3" />
+                      </div>
                     </TabsTrigger>
                   </>
                 ) : (
@@ -1163,76 +1249,149 @@ export default function LectureView() {
                   <>
                     <TabsTrigger
                       value="transcript"
-                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                     >
                       <FileText className="w-4 h-4 mr-2" />
                       <span className="hidden sm:inline">{t.transcript}</span>
+                      <div 
+                        onClick={(e) => { e.stopPropagation(); handleOpenInPopup("transcript"); }}
+                        className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                        title={t.openInPopup || "Open in Popup"}
+                      >
+                        <Maximize2 className="w-3 h-3" />
+                      </div>
                     </TabsTrigger>
                     <TabsTrigger
                       value="summary"
-                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                     >
                       <List className="w-4 h-4 mr-2" />
                       <span className="hidden sm:inline">{t.summary}</span>
+                      <div 
+                        onClick={(e) => { e.stopPropagation(); handleOpenInPopup("summary"); }}
+                        className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                        title={t.openInPopup || "Open in Popup"}
+                      >
+                        <Maximize2 className="w-3 h-3" />
+                      </div>
                     </TabsTrigger>
                     <TabsTrigger
                       value="conceptMap"
-                      className="flex-1 sm:flex-none justify-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:shadow-sm rounded-lg py-2.5 transition-all w-16 sm:w-auto"
+                      className="flex-1 sm:flex-none justify-center gap-2 data-[state=active]:bg-primary/20 data-[state=active]:text-primary data-[state=active]:font-bold data-[state=active]:shadow-sm rounded-lg py-2.5 transition-all w-16 sm:w-auto group relative"
                     >
                       <BrainCircuit className="w-5 h-5 sm:w-4 sm:h-4" />
                       <span className="hidden sm:inline">{t.conceptMap || "Concept Map"}</span>
+                      <div 
+                        onClick={(e) => { e.stopPropagation(); handleOpenInPopup("conceptMap"); }}
+                        className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                        title={t.openInPopup || "Open in Popup"}
+                      >
+                        <Maximize2 className="w-3 h-3" />
+                      </div>
                     </TabsTrigger>
                     <TabsTrigger
                       value="quiz"
-                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                     >
                       <HelpCircle className="w-4 h-4 mr-2" />
                       <span className="hidden sm:inline">{t.quiz}</span>
+                      <div 
+                        onClick={(e) => { e.stopPropagation(); handleOpenInPopup("quiz"); }}
+                        className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                        title={t.openInPopup || "Open in Popup"}
+                      >
+                        <Maximize2 className="w-3 h-3" />
+                      </div>
                     </TabsTrigger>
                     {!isPresentation && (
                       <TabsTrigger
                         value="slides"
-                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                       >
                         <Presentation className="w-4 h-4 mr-2" />
                         <span className="hidden sm:inline">{t.slides}</span>
+                        <div 
+                          onClick={(e) => { e.stopPropagation(); handleOpenInPopup("slides"); }}
+                          className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                          title={t.openInPopup || "Open in Popup"}
+                        >
+                          <Maximize2 className="w-3 h-3" />
+                        </div>
                       </TabsTrigger>
                     )}
                     {hasFormulas && (
                       <TabsTrigger
                         value="formulas"
-                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                       >
                         <Sigma className="w-4 h-4 mr-2" />
                         <span className="hidden sm:inline">{t.formulas}</span>
+                        <div 
+                          onClick={(e) => { e.stopPropagation(); handleOpenInPopup("formulas"); }}
+                          className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                          title={t.openInPopup || "Open in Popup"}
+                        >
+                          <Maximize2 className="w-3 h-3" />
+                        </div>
                       </TabsTrigger>
                     )}
                     <TabsTrigger
                       value="flashcards"
-                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                     >
                       <Brain className="w-4 h-4 mr-2" />
                       <span className="hidden sm:inline">{t.cards}</span>
+                      <div 
+                        onClick={(e) => { e.stopPropagation(); handleOpenInPopup("flashcards"); }}
+                        className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                        title={t.openInPopup || "Open in Popup"}
+                      >
+                        <Maximize2 className="w-3 h-3" />
+                      </div>
                     </TabsTrigger>
                     {(lecture.extractedImages && lecture.extractedImages.length > 0) || isPresentation || lecture?.title?.match(/\.(pdf)$/i) ? (
                       <TabsTrigger
                         value="images"
-                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                        className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                       >
                         <ImageIcon className="w-4 h-4 mr-2" />
                         <span className="hidden sm:inline">{t.images}</span>
+                        <div 
+                          onClick={(e) => { e.stopPropagation(); handleOpenInPopup("images"); }}
+                          className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                          title={t.openInPopup || "Open in Popup"}
+                        >
+                          <Maximize2 className="w-3 h-3" />
+                        </div>
                       </TabsTrigger>
                     ) : null}
                     <TabsTrigger
                       value="chat"
-                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all"
+                      className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-sm rounded-lg px-4 py-2.5 transition-all group relative"
                     >
                       <Bot className="w-4 h-4 mr-2 animate-pulse" />
                       <span className="hidden sm:inline">{t.chat}</span>
+                      <div 
+                        onClick={(e) => { e.stopPropagation(); handleOpenInPopup("chat"); }}
+                        className="opacity-0 group-hover:opacity-100 absolute -top-1 -right-1 p-1 bg-background border rounded-full shadow-sm hover:text-primary transition-all z-10"
+                        title={t.openInPopup || "Open in Popup"}
+                      >
+                        <Maximize2 className="w-3 h-3" />
+                      </div>
                     </TabsTrigger>
                   </>
                 )}
               </TabsList>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleOpenInNewWindow(activeTab)}
+                className="shrink-0 text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
+                title={language === "ar" ? "فتح في نافذة جديدة" : "Open in New Window"}
+              >
+                <Maximize2 className="w-4 h-4" />
+                <span className="hidden xl:inline">{language === "ar" ? "فتح في نافذة جديدة" : "Open in New Window"}</span>
+              </Button>
             </div>
 
             <div className="min-h-[500px]">
@@ -1340,6 +1499,76 @@ export default function LectureView() {
             </div>
           </Tabs>
         </motion.div>
+
+        {/* In-Window Popup Dialog */}
+        <Dialog open={isPopupOpen} onOpenChange={setIsPopupOpen}>
+          <DialogContent className="max-w-5xl w-[95vw] h-[90vh] overflow-y-auto p-0 border-none bg-transparent">
+            <div className="bg-background rounded-2xl shadow-2xl overflow-hidden flex flex-col h-full border">
+                <DialogHeader className="p-4 border-b bg-card">
+                  <DialogTitle className="flex items-center gap-2">
+                    {popupTab === "transcript" && <><FileText className="w-5 h-5 text-primary" /> {t.transcript}</>}
+                    {popupTab === "summary" && <><List className="w-5 h-5 text-primary" /> {t.summary}</>}
+                    {popupTab === "conceptMap" && <><BrainCircuit className="w-5 h-5 text-primary" /> {t.conceptMap}</>}
+                    {popupTab === "quiz" && <><HelpCircle className="w-5 h-5 text-primary" /> {t.quiz}</>}
+                    {popupTab === "slides" && <><Presentation className="w-5 h-5 text-primary" /> {t.slides}</>}
+                    {popupTab === "formulas" && <><Sigma className="w-5 h-5 text-primary" /> {t.formulas}</>}
+                    {popupTab === "flashcards" && <><Brain className="w-5 h-5 text-primary" /> {t.cards}</>}
+                    {popupTab === "images" && <><ImageIcon className="w-5 h-5 text-primary" /> {t.images}</>}
+                    {popupTab === "chat" && <><Bot className="w-5 h-5 text-primary" /> {t.chat}</>}
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="flex-1 overflow-y-auto p-6 bg-background">
+                  {popupTab === "transcript" && (
+                    <TranscriptView text={lecture.transcript || "No transcript available."} title={lecture.title} />
+                  )}
+                  {popupTab === "summary" && (
+                    <SummaryView summary={lecture.summary || []} title={lecture.title} />
+                  )}
+                  {popupTab === "conceptMap" && (
+                    <ConceptMapView mindmapCode={lecture.conceptMap} />
+                  )}
+                  {popupTab === "quiz" && (
+                    <QuizView
+                      questions={lecture.questions}
+                      title={lecture.title}
+                      lectureId={lecture.id}
+                      transcript={lecture.transcript}
+                      modelType={selectedModel}
+                    />
+                  )}
+                  {popupTab === "slides" && (
+                    <SlidesView
+                      slides={lecture.slides || []}
+                      title={lecture.title}
+                      transcript={lecture.transcript}
+                      summary={lecture.summary}
+                      lectureId={lecture.id}
+                    />
+                  )}
+                  {popupTab === "formulas" && (
+                    <FormulasView formulas={lecture.formulas || []} />
+                  )}
+                  {popupTab === "flashcards" && (
+                    <FlashcardsView flashcards={lecture.flashcards || []} />
+                  )}
+                  {popupTab === "images" && (
+                     <ImagesView
+                        lectureId={lecture.id}
+                        images={lecture.extractedImages}
+                        onAnalysisRequested={handleImageAnalysis}
+                      />
+                  )}
+                  {popupTab === "chat" && (
+                    <AgentChatView
+                      transcript={lecture.transcript || ""}
+                      title={lecture.title}
+                      mode={selectedModel}
+                    />
+                  )}
+                </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </AppLayout>
   );
